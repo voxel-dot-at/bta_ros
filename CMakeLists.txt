@@ -2,13 +2,12 @@ cmake_minimum_required(VERSION 2.8.3)
 project(bta_ros)
 
 ## check required modules
-SET(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake_modules")
-FIND_PACKAGE(bta REQUIRED)
+set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake_modules")
+find_package(bta REQUIRED)
 
 #find_package(Boost REQUIRED COMPONENTS system thread)
 
-#FIND_PACKAGE(OpenCV REQUIRED)
-
+#find_package(OpenCV REQUIRED)
 
 ## Find catkin macros and libraries
 find_package(catkin REQUIRED COMPONENTS
