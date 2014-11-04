@@ -1,0 +1,10 @@
+<library path="lib/libBtaRosNodelet">
+  <class 
+  	name="bta_ros/BtaRosNodelet" 
+  	type="bta_ros::BtaRosNodelet" 
+  	base_class_type="nodelet::Nodelet">
+  <description>
+  This is my nodelet.
+  </description>
+  </class>
+</library>
