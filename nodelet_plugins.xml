@@ -1,10 +1,21 @@
+<library path="lib/libSensor2DNodelet">
+	<class 
+  	name="bta_ros/Sensor2DNodelet" 
+  	type="bta_ros::Sensor2DNodelet" 
+  	base_class_type="nodelet::Nodelet">
+	  <description>
+	  Creates a video 2D topics for devices with RGB sensors. Based in gstreamer.
+	  </description>
+  </class>
+</library>
+
 <library path="lib/libBtaRosNodelet">
   <class 
   	name="bta_ros/BtaRosNodelet" 
   	type="bta_ros::BtaRosNodelet" 
   	base_class_type="nodelet::Nodelet">
-  <description>
-  This is my nodelet.
-  </description>
+	  <description>
+	  Bluetechnix device nodelet.
+	  </description>
   </class>
 </library>

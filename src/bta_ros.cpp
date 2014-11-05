@@ -63,21 +63,26 @@ namespace bta_ros
 	
 	BtaRos::~BtaRos() 
 	{
+		printf("clossing!!!!!");
 		close();
 	}
 	
 
 	void BtaRos::close() 
 	{
-		if (BTAisConnected(handle)) {
-			BTAclose(&handle);
+		ROS_DEBUG("Close called");
+		if (BTAisConnected(handle_)) {
+			ROS_DEBUG("Clossing..");
+			BTA_Status status;
+			status = BTAclose(&handle_);
+			printf("done: %d \n", status);
 	 	}
 		
 		return;
 	}
 
 	
-	void BtaRos::callback(bta_ros::bta_rosConfig &config, uint32_t level)
+	void BtaRos::callback(bta_ros::bta_rosConfig &config_, uint32_t level)
 	{
 		BTA_Status status;
 		// Check the configuretion parameters with those given in the initialization
@@ -87,53 +92,53 @@ namespace bta_ros
 		if (!config_init_) {
 			if (nh_private_.getParam(nodeName_+"/integrationTime",it)) {
 				usValue = (uint32_t)it;
-				status = BTAsetIntegrationTime(handle, usValue);
+				status = BTAsetIntegrationTime(handle_, usValue);
 				if (status != BTA_StatusOk)
 					ROS_WARN_STREAM("Error setting IntegrationTime:: " << status << "---------------");	
 			} else {
-				status = BTAgetIntegrationTime(handle, &usValue);
+				status = BTAgetIntegrationTime(handle_, &usValue);
 				if (status != BTA_StatusOk)
 					ROS_WARN_STREAM("Error reading IntegrationTime: " << status << "---------------");
 				else
 					nh_private_.setParam(nodeName_+"/integrationTime", (int)usValue);
 			}
-			nh_private_.getParam(nodeName_+"/integrationTime",config.Integration_Time);
+			nh_private_.getParam(nodeName_+"/integrationTime",config_.Integration_Time);
 			
 			if (nh_private_.getParam(nodeName_+"/frameRate",fr)) {
-				status = BTAsetFrameRate(handle, fr);
+				status = BTAsetFrameRate(handle_, fr);
 				if (status != BTA_StatusOk)
 					ROS_WARN_STREAM("Error setting FrameRate: " << status << "---------------");	
 			} else {
 				float fr_f;
-				status = BTAgetFrameRate(handle, &fr_f);
+				status = BTAgetFrameRate(handle_, &fr_f);
 				fr = fr_f;
 				if (status != BTA_StatusOk)
 					ROS_WARN_STREAM("Error reading FrameRate: " << status << "---------------");
 				else
 					nh_private_.setParam(nodeName_+"/frameRate", fr);
 			}
-			nh_private_.getParam(nodeName_+"/frameRate",config.Frame_rate);
+			nh_private_.getParam(nodeName_+"/frameRate",config_.Frame_rate);
 		}
 		
 		
 		nh_private_.getParam(nodeName_+"/integrationTime",it);
-		if(it != config.Integration_Time) {
-			usValue = (uint32_t)config.Integration_Time;
-			status = BTAsetIntegrationTime(handle, usValue);
+		if(it != config_.Integration_Time) {
+			usValue = (uint32_t)config_.Integration_Time;
+			status = BTAsetIntegrationTime(handle_, usValue);
 				if (status != BTA_StatusOk)
 					ROS_WARN_STREAM("Error setting IntegrationTime: " << status << "---------------");	
 				else
-					nh_private_.setParam(nodeName_+"/integrationTime", config.Integration_Time);
+					nh_private_.setParam(nodeName_+"/integrationTime", config_.Integration_Time);
 		}
 		
 		nh_private_.getParam(nodeName_+"/frameRate",fr);
-		if(fr != config.Frame_rate) {
-			usValue = (uint32_t)config.Frame_rate;
-			status = BTAsetFrameRate(handle, usValue);
+		if(fr != config_.Frame_rate) {
+			usValue = (uint32_t)config_.Frame_rate;
+			status = BTAsetFrameRate(handle_, usValue);
 				if (status != BTA_StatusOk)
 					ROS_WARN_STREAM("Error setting FrameRate: " << status << "---------------");	
 				else
-					nh_private_.setParam(nodeName_+"/frameRate", config.Frame_rate);
+					nh_private_.setParam(nodeName_+"/frameRate", config_.Frame_rate);
 		}
 		
 		 config_init_ = true;
@@ -145,12 +150,12 @@ namespace bta_ros
 		BTA_Status status;
 
 		BTA_Frame *frame;
-    status = BTAgetFrame(handle, &frame, 3000);
+    status = BTAgetFrame(handle_, &frame, 3000);
     if (status != BTA_StatusOk) {
        	return;
     }
 
-		ROS_DEBUG("		frameArrived FrameCounter %d\n", frame->frameCounter);
+		ROS_DEBUG("		frameArrived FrameCounter %d", frame->frameCounter);
 		
 		
 		uint16_t *distances;
@@ -230,15 +235,14 @@ namespace bta_ros
   }*/
 
 	void BtaRos::parseConfig() {
-			int iusValue;
-		
+		int iusValue;
 		nh_private_.param(nodeName_+"/udpDataIpAddrLen",iusValue,4);
-		config.udpDataIpAddrLen = (uint8_t)iusValue;
+		config_.udpDataIpAddrLen = (uint8_t)iusValue;
 		
-		ROS_DEBUG_STREAM("config.udpDataIpAddrLen: " << (int)config.udpDataIpAddrLen);
+		ROS_DEBUG_STREAM("config_.udpDataIpAddrLen: " << (int)config_.udpDataIpAddrLen);
 		if (nh_private_.hasParam(nodeName_+"/udpDataIpAddr")) {
-			ROS_DEBUG_STREAM("config.udpDataIpAddr:");
-			for (int i = 1; i <= config.udpDataIpAddrLen; i++) {
+			ROS_DEBUG_STREAM("config_.udpDataIpAddr:");
+			for (int i = 1; i <= config_.udpDataIpAddrLen; i++) {
 				std::ostringstream to_string;
 				to_string << "";
 				to_string << nodeName_ << "/udpDataIpAddr/n" << i;
@@ -246,18 +250,18 @@ namespace bta_ros
 				udpDataIpAddr_[i-1] = (uint8_t)iusValue;
 				ROS_DEBUG_STREAM((int)udpDataIpAddr_[i-1] << ","); 
 			}
-			config.udpDataIpAddr = udpDataIpAddr_;
+			config_.udpDataIpAddr = udpDataIpAddr_;
 		}
 		nh_private_.param(nodeName_+"/udpDataPort",iusValue,10002);
-		config.udpDataPort = (uint16_t)iusValue;
-		ROS_DEBUG_STREAM("config.udpDataPort: " << config.udpDataPort);  
+		config_.udpDataPort = (uint16_t)iusValue;
+		ROS_DEBUG_STREAM("config_.udpDataPort: " << config_.udpDataPort);  
 		
 	 	if(nh_private_.getParam(nodeName_+"/udpControlOutIpAddrLen",iusValue))
-	 		config.udpControlOutIpAddrLen = (uint8_t)iusValue;
-		ROS_DEBUG_STREAM("config.udpControlOutIpAddrLen: " << (int)config.udpControlOutIpAddrLen);
+	 		config_.udpControlOutIpAddrLen = (uint8_t)iusValue;
+		ROS_DEBUG_STREAM("config_.udpControlOutIpAddrLen: " << (int)config_.udpControlOutIpAddrLen);
 		if (nh_private_.hasParam(nodeName_+"/udpControlOutIpAddr")) {
-			ROS_DEBUG_STREAM("config.udpControlOutIpAddr:");
-			for (int i = 1; i <= config.udpControlOutIpAddrLen; i++) {
+			ROS_DEBUG_STREAM("config_.udpControlOutIpAddr:");
+			for (int i = 1; i <= config_.udpControlOutIpAddrLen; i++) {
 				std::ostringstream to_string;
 				to_string << "";
 				to_string << nodeName_ << "/udpControlOutIpAddr/n" << i;
@@ -265,19 +269,19 @@ namespace bta_ros
 				udpControlOutIpAddr_[i-1] = (uint8_t)iusValue;
 				ROS_DEBUG_STREAM((int)udpControlOutIpAddr_[i-1] << ","); 
 			}
-			config.udpControlOutIpAddr = udpControlOutIpAddr_;
+			config_.udpControlOutIpAddr = udpControlOutIpAddr_;
 		}
 		if(nh_private_.getParam(nodeName_+"/udpControlOutPort",iusValue))
-			config.udpControlOutPort = (uint16_t)iusValue; 
-		ROS_DEBUG_STREAM("config.udpControlOutPort: " << (int)config.udpControlOutPort);
+			config_.udpControlOutPort = (uint16_t)iusValue; 
+		ROS_DEBUG_STREAM("config_.udpControlOutPort: " << (int)config_.udpControlOutPort);
 		
 		if(nh_private_.getParam(nodeName_+"/udpControlInIpAddrLen",iusValue))
-			config.udpControlInIpAddrLen = (uint8_t)iusValue;
-		ROS_DEBUG_STREAM("config.udpControlInIpAddrLen: " << (int)config.udpControlInIpAddrLen);
+			config_.udpControlInIpAddrLen = (uint8_t)iusValue;
+		ROS_DEBUG_STREAM("config_.udpControlInIpAddrLen: " << (int)config_.udpControlInIpAddrLen);
 		if (nh_private_.hasParam(nodeName_+"/udpControlInIpAddr")) {
 			
-			ROS_DEBUG_STREAM("config.udpControlInIpAddr:");
-			for (int i = 1; i <= config.udpControlInIpAddrLen; i++) {
+			ROS_DEBUG_STREAM("config_.udpControlInIpAddr:");
+			for (int i = 1; i <= config_.udpControlInIpAddrLen; i++) {
 				std::ostringstream to_string;
 				to_string << "";
 				to_string << nodeName_ << "/udpControlInIpAddr/n" << i;
@@ -285,18 +289,18 @@ namespace bta_ros
 				udpControlInIpAddr_[i-1] = (uint8_t)iusValue; 
 				ROS_DEBUG_STREAM((int)udpControlInIpAddr_[i-1] << ","); 
 			}
-			config.udpControlInIpAddr = udpControlInIpAddr_;
+			config_.udpControlInIpAddr = udpControlInIpAddr_;
 		}
 		if(nh_private_.getParam(nodeName_+"/udpControlInPort",iusValue))
-		  	config.udpControlInPort = (uint16_t)iusValue; 
-		ROS_DEBUG_STREAM("config.udpControlInPort: " << (int)config.udpControlInPort);
+		  	config_.udpControlInPort = (uint16_t)iusValue; 
+		ROS_DEBUG_STREAM("config_.udpControlInPort: " << (int)config_.udpControlInPort);
 	  
 		nh_private_.param(nodeName_+"/tcpDeviceIpAddrLen",iusValue,4);
-		config.tcpDeviceIpAddrLen = (uint8_t)iusValue;
-		ROS_DEBUG_STREAM("config.tcpDeviceIpAddrLen: " << (int)config.tcpDeviceIpAddrLen);
+		config_.tcpDeviceIpAddrLen = (uint8_t)iusValue;
+		ROS_DEBUG_STREAM("config_.tcpDeviceIpAddrLen: " << (int)config_.tcpDeviceIpAddrLen);
 		if (nh_private_.hasParam(nodeName_+"/tcpDeviceIpAddr")) {
 			ROS_DEBUG_STREAM("TCP address:");
-			for (int i = 1; i <= config.tcpDeviceIpAddrLen; i++) {
+			for (int i = 1; i <= config_.tcpDeviceIpAddrLen; i++) {
 				std::ostringstream to_string;
 				to_string << "";
 				to_string << nodeName_ << "/tcpDeviceIpAddr/n" << i;
@@ -304,77 +308,81 @@ namespace bta_ros
 				tcpDeviceIpAddr_[i-1] = (uint8_t)iusValue;
 				ROS_DEBUG_STREAM((int)tcpDeviceIpAddr_[i-1] << ",");  
 			}
-			config.tcpDeviceIpAddr = tcpDeviceIpAddr_;
+			config_.tcpDeviceIpAddr = tcpDeviceIpAddr_;
 		}
 		nh_private_.param(nodeName_+"/tcpControlPort",iusValue,10001);
-		config.tcpControlPort = (uint16_t)iusValue;
-		ROS_DEBUG_STREAM("config.tcpControlPort: " << config.tcpControlPort);
+		config_.tcpControlPort = (uint16_t)iusValue;
+		ROS_DEBUG_STREAM("config_.tcpControlPort: " << config_.tcpControlPort);
 		
 		if (nh_private_.getParam(nodeName_+"/tcpDataPort",iusValue))  
-			config.tcpDataPort = (uint16_t)iusValue;
+			config_.tcpDataPort = (uint16_t)iusValue;
 	
 		nh_private_.getParam(nodeName_+"/uartPortName",uartPortName_);
-		config.uartPortName = (int8_t *)uartPortName_.c_str();
+		config_.uartPortName = (int8_t *)uartPortName_.c_str();
 	
 		if(nh_private_.getParam(nodeName_+"/uartBaudRate",iusValue))
-			config.uartBaudRate = (uint32_t)iusValue;
+			config_.uartBaudRate = (uint32_t)iusValue;
 		if(nh_private_.getParam(nodeName_+"/uartDataBits",iusValue))
-			config.uartDataBits = (uint8_t)iusValue;
+			config_.uartDataBits = (uint8_t)iusValue;
 		if(nh_private_.getParam(nodeName_+"/uartStopBits",iusValue))
-			config.uartStopBits = (uint8_t)iusValue;
+			config_.uartStopBits = (uint8_t)iusValue;
 		if(nh_private_.getParam(nodeName_+"/uartParity",iusValue))
-			config.uartParity = (uint8_t)iusValue;
+			config_.uartParity = (uint8_t)iusValue;
 		if(nh_private_.getParam(nodeName_+"/uartTransmitterAddress",iusValue))
-			config.uartTransmitterAddress = (uint8_t)iusValue;
+			config_.uartTransmitterAddress = (uint8_t)iusValue;
 		if(nh_private_.getParam(nodeName_+"/uartReceiverAddress",iusValue))
-			config.uartReceiverAddress = (uint8_t)iusValue;
+			config_.uartReceiverAddress = (uint8_t)iusValue;
 		if(nh_private_.getParam(nodeName_+"/serialNumber",iusValue))
-			config.serialNumber = (uint32_t)iusValue;
-	
+			config_.serialNumber = (uint32_t)iusValue;
+
 		nh_private_.getParam(nodeName_+"/calibFileName",calibFileName_);
-		config.calibFileName = (uint8_t *)calibFileName_.c_str();
+		config_.calibFileName = (uint8_t *)calibFileName_.c_str();
 	
 		int32_t frameMode;
 		nh_private_.param(nodeName_+"/frameMode",frameMode,(int)BTA_FrameModeDistAmp);
-		config.frameMode = (BTA_FrameMode)frameMode;
+		config_.frameMode = (BTA_FrameMode)frameMode;
 	
 		nh_private_.param(nodeName_+"/verbosity",iusValue,5);
-		config.verbosity = (uint8_t)iusValue;
+		config_.verbosity = (uint8_t)iusValue;
 	
 		nh_private_.param(nodeName_+"/frameQueueLength",iusValue,1);
-		config.frameQueueLength = (uint16_t)iusValue;
+		config_.frameQueueLength = (uint16_t)iusValue;
 	
 		int32_t frameQueueMode;
 		nh_private_.param(nodeName_+"/frameQueueMode",frameQueueMode,(int)BTA_QueueModeDropOldest);
-		config.frameQueueMode = (BTA_QueueMode)frameQueueMode;
+		config_.frameQueueMode = (BTA_QueueMode)frameQueueMode;
 	
-		//config.frameArrived = &frameArrived;
-		config.infoEvent = &infoEventCb;
+		//config_.frameArrived = &frameArrived;
+		config_.infoEvent = &infoEventCb;
 	}
+
+
 
 	int BtaRos::connectCamera() {
 		BTA_Status status;
 		BTA_DeviceInfo *deviceInfo;
 		
 		// Init camera connection
-
+		//ros::Duration().sleep();
 		status = (BTA_Status)-1;
 		for (int i=0; i<10; i++) {
 			ROS_DEBUG_STREAM("Connecting... try " << i+1);
-			status = BTAopen(&config, &handle);
+			status = BTAopen(&config_, &handle_);
 			if (status != BTA_StatusOk) {
+				if (!nh_private_.ok() && ros::isShuttingDown())
+					return -1;
 				ROS_WARN_STREAM("Could not connect to the camera. status: " << status);
 				continue;
 			}
 			break;
 		}
-		if (!BTAisConnected(handle)) {
+		if (!BTAisConnected(handle_)) {
 		 		ROS_WARN_STREAM("Could not connect to the camera.");
 		 		return -1;
 		}
 		
 		ROS_INFO_STREAM("Camera connected sucessfully. status: " << status);
-		status = BTAgetDeviceInfo(handle, &deviceInfo);
+		status = BTAgetDeviceInfo(handle_, &deviceInfo);
 		if (status != BTA_StatusOk) {
 			ROS_WARN_STREAM("Could not get device info. status: " << status);
 		    return status;
@@ -388,8 +396,8 @@ namespace bta_ros
 			<< "firmwareVersionNonFunc: " << deviceInfo->firmwareVersionNonFunc 
 			<< "\n");
 
-		ROS_INFO_STREAM("Service running: " << (int)BTAisRunning(handle));
-		ROS_INFO_STREAM("Connection up: " << (int)BTAisConnected(handle));
+		ROS_INFO_STREAM("Service running: " << (int)BTAisRunning(handle_));
+		ROS_INFO_STREAM("Connection up: " << (int)BTAisConnected(handle_));
 		
 		BTAfreeDeviceInfo(deviceInfo);
 		return 1;
@@ -399,10 +407,10 @@ namespace bta_ros
 	{
 
 		/*
-		 * Camera config
+		 * Camera config_
 		 */
 		
-		BTAinitConfig(&config);  
+		BTAinitConfig(&config_);  
 	
 		parseConfig();
 		
@@ -442,7 +450,7 @@ namespace bta_ros
 			} else {
 				ROS_WARN_STREAM("Camera info at: " <<
 					"package://bta_ros/calib.yml" <<
-					" not found. Using an uncalibrated config.");
+					" not found. Using an uncalibrated config_.");
 			} 	
 		
 			pub_amp_ = it_.advertiseCamera(nodeName_ + "/tof_camera/image_raw", 1);
@@ -452,9 +460,10 @@ namespace bta_ros
 			//sub_dis_ = nh_private_.subscribe("bta_node_dis", 1, &BtaRos::disCb, this);
 		}
 		
-		while (nh_.ok()) {
-			if (!BTAisConnected(handle)) {
-		 		ROS_WARN_STREAM("The camera got disconnected." << BTAisConnected(handle));
+		while (nh_private_.ok() && !ros::isShuttingDown()) {
+		ROS_WARN_STREAM("nh_.ok(): " << nh_private_.ok());
+			if (!BTAisConnected(handle_)) {
+		 		ROS_WARN_STREAM("The camera got disconnected." << BTAisConnected(handle_));
 	 			if (connectCamera() < 0)
 					break;
 			}
@@ -462,7 +471,7 @@ namespace bta_ros
 			publishData();
 			ros::spinOnce ();	
 		}
-		
+		ROS_WARN_STREAM("nh_.ok() closed: " << nh_private_.ok());
 		return 0;
 	}
 }

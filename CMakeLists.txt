@@ -5,6 +5,10 @@ project(bta_ros)
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake_modules")
 find_package(bta REQUIRED)
 
+find_package(GStreamer REQUIRED )
+find_package(GLIB REQUIRED)
+find_package(GObject REQUIRED)
+
 #find_package(Boost REQUIRED COMPONENTS system thread)
 
 #find_package(OpenCV REQUIRED)
@@ -37,9 +41,9 @@ generate_dynamic_reconfigure_options(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES bta_ros
+  LIBRARIES bta_ros sensor2d
  CATKIN_DEPENDS dynamic_reconfigure roscpp sensor_msgs std_msgs pcl_ros pcl_conversions image_transport camera_info_manager nodelet
-  DEPENDS bta
+  DEPENDS bta GStreamer GLIB GObject
 )
 
 ###########
@@ -51,7 +55,11 @@ include_directories(include
   ${bta_INCLUDE_DIR}
   ${PCL_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
-  ${OpenCV_INCLUDE_DIRS}
+  #${OpenCV_INCLUDE_DIRS}
+  ${GSTREAMER_INCLUDE_DIRS} 
+  ${GSTREAMER_APP_INCLUDE_DIRS} 
+  ${GLIB_INCLUDE_DIRS} 
+  ${GOBJECT_INCLUDE_DIRS}
 )
 
 add_library(bta_ros
@@ -60,15 +68,29 @@ src/bta_ros.cpp
 target_link_libraries(bta_ros bta_ros ${bta_LIBRARIES} ${catkin_LIBRARIES} )
 add_dependencies(bta_ros ${PROJECT_NAME}_gencfg) 
 
+add_library(sensor2d
+src/sensor2D.cpp
+)
+target_link_libraries(sensor2d sensor2d ${GOBJECT_LIBRARIES} ${GSTREAMER_LIBRARIES} ${GSTREAMER_APP_LIBRARIES} ${GLIB_LIBRARIES} ${catkin_LIBRARIES} )
+
 add_library(BtaRosNodelet
 src/bta_ros_nodelet.cpp
 )
 target_link_libraries(BtaRosNodelet bta_ros ${catkin_LIBRARIES} ${Boost_LIBRARIES} )
 
+add_library(Sensor2DNodelet
+src/sensor2D_nodelet.cpp
+)
+target_link_libraries(Sensor2DNodelet sensor2d ${catkin_LIBRARIES} ${Boost_LIBRARIES} )
+
 ## Declare a cpp executable
 add_executable(bta_ros_node src/bta_ros_node.cpp)
 
 target_link_libraries(bta_ros_node bta_ros ${catkin_LIBRARIES} )
+
+add_executable(sensor2d_node src/sensor2d_node.cpp)
+
+target_link_libraries(sensor2d_node sensor2d ${catkin_LIBRARIES} )
 #set_target_properties(bta_ros_node PROPERTIES OUTPUT_NAME bta_ros)
 
 
@@ -87,7 +109,7 @@ target_link_libraries(bta_ros_node bta_ros ${catkin_LIBRARIES} )
 # )
 
 ## Mark executables and/or libraries for installation
- install(TARGETS bta_ros bta_ros_node BtaRosNodelet
+ install(TARGETS bta_ros bta_ros_node BtaRosNodelet sensor2d Sensor2DNodelet
    ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
