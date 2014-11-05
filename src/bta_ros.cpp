@@ -42,7 +42,6 @@
 
 #include <bta_ros/bta_ros.hpp>
 
-
 namespace bta_ros 
 {
 
@@ -89,6 +88,7 @@ namespace bta_ros
 		int it;
 		double fr;
 		uint32_t usValue;
+
 		if (!config_init_) {
 			if (nh_private_.getParam(nodeName_+"/integrationTime",it)) {
 				usValue = (uint32_t)it;
@@ -96,8 +96,8 @@ namespace bta_ros
 				if (status != BTA_StatusOk)
 					ROS_WARN_STREAM("Error setting IntegrationTime:: " << status << "---------------");	
 			} else {
-				status = BTAgetIntegrationTime(handle_, &usValue);
-				if (status != BTA_StatusOk)
+                status = BTAgetIntegrationTime(handle_, &usValue);
+                if (status != BTA_StatusOk)
 					ROS_WARN_STREAM("Error reading IntegrationTime: " << status << "---------------");
 				else
 					nh_private_.setParam(nodeName_+"/integrationTime", (int)usValue);
@@ -118,6 +118,8 @@ namespace bta_ros
 					nh_private_.setParam(nodeName_+"/frameRate", fr);
 			}
 			nh_private_.getParam(nodeName_+"/frameRate",config_.Frame_rate);
+            config_init_ = true;
+            return;
 		}
 		
 		
@@ -140,8 +142,44 @@ namespace bta_ros
 				else
 					nh_private_.setParam(nodeName_+"/frameRate", config_.Frame_rate);
 		}
-		
-		 config_init_ = true;
+
+        if(config_.Read_reg) {
+            try {
+                std::stringstream ss;
+                it = strtoul(config_.Reg_addr.c_str(), NULL, 0);
+                status = BTAreadRegister(handle_, it, &usValue, 0);
+                if (status != BTA_StatusOk) {
+                    ROS_WARN_STREAM("Could not read reg: " << config_.Reg_addr << ". Status: " << status);
+                }
+                ss<<"";
+                ss  << "0x"<< std::hex << usValue;
+                ss >> config_.Reg_val;
+            } catch(const boost::bad_lexical_cast &) {
+                ROS_WARN_STREAM("Wrong address: " << config_.Reg_addr << " " << it);
+            }
+            config_.Read_reg = false;
+        }
+        if(config_.Write_reg) {
+            //std::stringstream ss;
+            it = strtoul(config_.Reg_addr.c_str(), NULL, 0);
+            usValue = strtoul(config_.Reg_val.c_str(), NULL, 0);
+
+            status = BTAwriteRegister(handle_, it, &usValue, 0);
+            if (status != BTA_StatusOk) {
+                ROS_WARN_STREAM("Could not write reg: " <<
+                    config_.Reg_addr <<
+                    " with val: " <<
+                    config_.Reg_val <<
+                    ". Status: " << status);
+            }
+            BTAgetIntegrationTime(handle_, &usValue);
+            config_.Integration_Time = usValue;
+            BTAsetFrameRate(handle_, fr);
+            config_.Frame_rate = fr;
+            config_.Write_reg = false;
+
+        }
+
 	}
 
 	void BtaRos::publishData() 
@@ -155,7 +193,7 @@ namespace bta_ros
        	return;
     }
 
-		ROS_DEBUG("		frameArrived FrameCounter %d", frame->frameCounter);
+        ROS_DEBUG("		frameArrived FrameCounter %d", frame->frameCounter);
 		
 		
 		uint16_t *distances;
@@ -461,7 +499,6 @@ namespace bta_ros
 		}
 		
 		while (nh_private_.ok() && !ros::isShuttingDown()) {
-		ROS_WARN_STREAM("nh_.ok(): " << nh_private_.ok());
 			if (!BTAisConnected(handle_)) {
 		 		ROS_WARN_STREAM("The camera got disconnected." << BTAisConnected(handle_));
 	 			if (connectCamera() < 0)
@@ -471,7 +508,6 @@ namespace bta_ros
 			publishData();
 			ros::spinOnce ();	
 		}
-		ROS_WARN_STREAM("nh_.ok() closed: " << nh_private_.ok());
 		return 0;
 	}
 }
