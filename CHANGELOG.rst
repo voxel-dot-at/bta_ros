@@ -2,5 +2,8 @@
 Changelog for package bta_ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.0.1 (2014-11-04)
-------------------
+Forthcoming
+-----------
+* Added 2d video support and minor fixed
+* Updated readme
+* Contributors: Angel Merino
