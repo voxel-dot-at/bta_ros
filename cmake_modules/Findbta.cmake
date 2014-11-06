@@ -1,6 +1,9 @@
 # - Try to find btatofapi headers and binaries
 # Once done this will define
 #
+set(BTA_ETH OFF)
+set(BTA_P100 OFF)
+
 FIND_PATH(bta_INCLUDE_DIR NAMES bta.h
  	PATHS
   		/usr/include/libbta/
@@ -27,8 +30,22 @@ find_library(bta_eth_LIBRARY NAMES bta_eth
 	DOC "Library binary"
 )
 
-#Not needed by now as we have just 1 include and lib
-set(bta_LIBRARIES ${bta_eth_LIBRARY} )
+find_library(bta_p100_LIBRARY NAMES bta_p100
+        PATHS
+  		/usr/lib/
+		/usr/local/lib/
+		../windows/lib/${ARCH_DIR}/
+	NO_DEFAULT_PATH
+	DOC "Library binary"
+)
+
+if (BTA_ETH)
+	set(bta_LIBRARIES ${bta_eth_LIBRARY})
+elseif (BTA_P100)
+	set(bta_LIBRARIES ${bta_eth_LIBRARY})
+else ()
+set(bta_LIBRARIES ${bta_p100_LIBRARY} ${bta_eth_LIBRARY})
+endif()
 #set(m100_INCLUDE_DIRS ${m100_INCLUDE_DIR} )
 
 include(FindPackageHandleStandardArgs)
