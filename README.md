@@ -162,27 +162,27 @@ For using this option in an user interface, run the ROS rqt_reconfigure node.
 We have included it to be run in the .launch files.
 
 Alternatively you can change the parameter by a command line using dynparam from dynamic_reconfigure:
-> http://wiki.ros.org/dynamic_reconfigure
+>http://wiki.ros.org/dynamic_reconfigure
 
 Read a register:
 
 <pre><code>
-#Set register address
+# 1. Set register address
 rosrun dynamic_reconfigure dynparam set /bta_ros_1 Reg_addr 0x5
-#Run read
+# 2.Run read
 rosrun dynamic_reconfigure dynparam set /bta_ros_1 Read_reg True 
-</pre></code>
+</code></pre>
 The value wil be display in console and written in Reg_val.
 
 Write a register:
 
 <pre><code>
-#Set_register_address
+# 1. Set_register_address
 rosrun dynamic_reconfigure dynparam set /bta_ros_1 Reg_addr 0x5
-#Set register value
+# 2. Set register value
 rosrun dynamic_reconfigure dynparam set /bta_ros_1 Reg_val 0x5dc #1500
-#Run write
+# 3. Run write
 rosrun dynamic_reconfigure dynparam set /bta_ros_1 Write_reg True
-</pre></code>
+</code></pre>
 A console message will tell you if it was written correctly.
 
