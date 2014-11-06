@@ -45,16 +45,19 @@
 namespace bta_ros 
 {
 
-	BtaRos::BtaRos(ros::NodeHandle nh_camera, ros::NodeHandle nh_private, std::string nodeName) : 
-		nh_(nh_camera),
-		nh_private_(nh_private),
-		it_(nh_camera),
-		cim_tof_(nh_camera),
-		nodeName_(nodeName),
-		config_init_(false) 
+	BtaRos::BtaRos(ros::NodeHandle nh_camera, 
+                ros::NodeHandle nh_private, 
+	              std::string nodeName) : 
+	  nh_(nh_camera),
+	  nh_private_(nh_private),
+	  it_(nh_camera),
+	  cim_tof_(nh_camera),
+	  nodeName_(nodeName),
+	  config_init_(false) 
 	{
 	
-		if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug) ) {
+		if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, 
+		    ros::console::levels::Debug) ) {
    		ros::console::notifyLoggerLevelsChanged();
 		}
 		
@@ -195,64 +198,102 @@ namespace bta_ros
        	return;
     }
 
-        ROS_DEBUG("		frameArrived FrameCounter %d", frame->frameCounter);
+    ROS_DEBUG("		frameArrived FrameCounter %d", frame->frameCounter);
 		
-		
-		uint16_t *distances;
 		BTA_DataFormat dataFormat;
 		BTA_Unit unit;
 		uint16_t xRes, yRes;
 		
-		sensor_msgs::ImagePtr amp (new sensor_msgs::Image);
-		sensor_msgs::ImagePtr dis (new sensor_msgs::Image);
+		sensor_msgs::CameraInfoPtr ci_tof(new sensor_msgs::CameraInfo(cim_tof_.getCameraInfo()));
+		ci_tof->header.frame_id = nodeName_+"/tof_camera";
 		
-		status = BTAgetDistances(frame, (void **)&distances, &dataFormat, &unit, &xRes, &yRes);
-		if (status == BTA_StatusOk) {
-		    if (dataFormat == BTA_DataFormatUInt16) {
-		        if (unit == BTA_UnitMillimeter) {
-		            	dis->header.seq = frame->frameCounter;
-		            	dis->header.stamp.sec = frame->timeStamp;
-		            	dis->height = yRes;
-		            	dis->width = xRes;
-		            	dis->encoding = sensor_msgs::image_encodings::TYPE_16UC1;
-		            	dis->step = yRes*sizeof(uint16_t);
-		            	dis->data.resize(xRes*yRes*sizeof(uint16_t));
-		            	memcpy ( &dis->data[0], distances, xRes*yRes*sizeof(uint16_t) );
-
-		   	
-		        }
-		    }
-		}
 		
-		uint16_t *amplitudes;
-		status = BTAgetAmplitudes(frame, (void **)&amplitudes, &dataFormat, &unit, &xRes, &yRes);
-		if (status == BTA_StatusOk) {
-		    if (dataFormat == BTA_DataFormatUInt16) {
-		        if (unit == BTA_UnitUnitLess) {
-		            amp->header.seq = frame->frameCounter;
-	            	amp->header.stamp.sec = frame->timeStamp;
-	            	amp->height = yRes;
-	            	amp->width = xRes;
-	            	amp->encoding = sensor_msgs::image_encodings::TYPE_16UC1;
-	            	amp->step = yRes*sizeof(uint16_t);
-	            	amp->data.resize(xRes*yRes*sizeof(uint16_t));
-	            	memcpy ( &amp->data[0], amplitudes, xRes*yRes*sizeof(uint16_t) );
-		        }
-		    }
-		}
-		  
+	  uint16_t *distances;
+	  status = BTAgetDistances(frame, (void **)&distances, &dataFormat, &unit, &xRes, &yRes);
+	  if (status == BTA_StatusOk) {
+	    sensor_msgs::ImagePtr dis (new sensor_msgs::Image);
+      if (dataFormat == BTA_DataFormatUInt16) {
+        if (unit == BTA_UnitMillimeter) {
+        	dis->header.seq = frame->frameCounter;
+        	dis->header.stamp.sec = frame->timeStamp;
+        	dis->height = yRes;
+        	dis->width = xRes;
+        	dis->encoding = sensor_msgs::image_encodings::TYPE_16UC1;
+        	dis->step = yRes*sizeof(uint16_t);
+        	dis->data.resize(xRes*yRes*sizeof(uint16_t));
+        	memcpy ( &dis->data[0], distances, xRes*yRes*sizeof(uint16_t) );
+        }
+      }
+      dis->header.frame_id = nodeName_+"/tof_camera";
+	    pub_dis_.publish(dis,ci_tof);
+	  }
+	
+	  bool ampOk = false;
+	  uint16_t *amplitudes;
+	  status = BTAgetAmplitudes(frame, (void **)&amplitudes, &dataFormat, &unit, &xRes, &yRes);
+	  if (status == BTA_StatusOk) {
+	    sensor_msgs::ImagePtr amp (new sensor_msgs::Image);
+      if (dataFormat == BTA_DataFormatUInt16) {
+        if (unit == BTA_UnitUnitLess) {
+          amp->header.seq = frame->frameCounter;
+        	amp->header.stamp.sec = frame->timeStamp;
+        	amp->height = yRes;
+        	amp->width = xRes;
+        	amp->encoding = sensor_msgs::image_encodings::TYPE_16UC1;
+        	amp->step = yRes*sizeof(uint16_t);
+        	amp->data.resize(xRes*yRes*sizeof(uint16_t));
+        	memcpy ( &amp->data[0], amplitudes, xRes*yRes*sizeof(uint16_t) );
+        }
+      }
+	    amp->header.frame_id = nodeName_+"/tof_camera";
+	    pub_amp_.publish(amp,ci_tof);
+	    ampOk = true;
+	  }
+		  	  
+		int16_t *xCoordinates, *yCoordinates, *zCoordinates;
+    printf("BTAgetXYZcoordinates()\n");
+    status = BTAgetXYZcoordinates(frame, (void **)&xCoordinates, (void **)&yCoordinates, (void **)&zCoordinates, &dataFormat, &unit, &xRes, &yRes);
+    if (status == BTA_StatusOk) {
+      sensor_msgs::PointCloud2Ptr xyz (new sensor_msgs::PointCloud2);
+      if (dataFormat == BTA_DataFormatSInt16) {
+        if (unit == BTA_UnitMillimeter) {
+          printf("Got 3D data\n");
+          pcl::PointCloud<pcl::PointXYZI> cloud;
+          for (size_t i = 0; i < yRes*xRes; ++i) {
+            pcl::PointXYZI temp_point;
+            temp_point.x = xCoordinates[i];
+            temp_point.y = yCoordinates[i];
+            temp_point.z = zCoordinates[i];
+            if (ampOk)
+              temp_point.intensity = amplitudes[i];
+            else
+              temp_point.intensity = 255;
+            cloud.push_back(temp_point);
+            
+          }
+          cloud.width = xRes;
+          cloud.height = yRes;
+          cloud.is_dense = true;
+          pcl::toROSMsg(cloud, *xyz);
+        }
+      }
+      xyz->header.seq = frame->frameCounter;
+      xyz->header.stamp.sec = frame->timeStamp;
+      xyz->header.frame_id = nodeName_+"/tof_camera";
+      pub_xyz_.publish(xyz);
+    } 
 		/*
 		 * Publishing the messages
 		 */
-		sensor_msgs::CameraInfoPtr ci_tof(new sensor_msgs::CameraInfo(cim_tof_.getCameraInfo()));
+		/*sensor_msgs::CameraInfoPtr ci_tof(new sensor_msgs::CameraInfo(cim_tof_.getCameraInfo()));
 		ci_tof->header.frame_id = nodeName_+"/tof_camera";
 		dis->header.frame_id = nodeName_+"/tof_camera";
-		amp->header.frame_id = nodeName_+"/tof_camera";
+		amp->header.frame_id = nodeName_+"/tof_camera";*/
 	
 		BTAfreeFrame(&frame);
 	
-		pub_amp_.publish(amp,ci_tof);
-		pub_dis_.publish(dis,ci_tof);
+	  //pub_amp_.publish(amp,ci_tof);
+		//pub_dis_.publish(dis,ci_tof);
 
 	}
 	
@@ -495,6 +536,7 @@ namespace bta_ros
 		
 			pub_amp_ = it_.advertiseCamera(nodeName_ + "/tof_camera/image_raw", 1);
 			pub_dis_ = it_.advertiseCamera(nodeName_ + "/tof_camera/compressedDepth", 1);
+			pub_xyz_ = nh_private_.advertise<sensor_msgs::PointCloud2> (nodeName_ + "/tof_camera/point_cloud_xyz", 1);
 	
 			//sub_amp_ = nh_private_.subscribe("bta_node_amp", 1, &BtaRos::ampCb, this);
 			//sub_dis_ = nh_private_.subscribe("bta_node_dis", 1, &BtaRos::disCb, this);

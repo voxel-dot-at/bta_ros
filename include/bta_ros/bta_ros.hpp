@@ -62,13 +62,12 @@
 #include <ros/console.h>
 #include <tf/transform_listener.h>
 
-#include <pcl_ros/point_cloud.h>
+
 
 // PCL 
+#include <pcl_ros/point_cloud.h>
 #include <pcl/point_types.h>
-#include <pcl/io/pcd_io.h>
 #include <pcl/conversions.h>
-#include <pcl/io/point_cloud_image_extractors.h>
 
 // Standard libs
 #include <stdio.h>
@@ -95,6 +94,7 @@ namespace bta_ros {
 		camera_info_manager::CameraInfoManager cim_tof_/*, *cim_rgb*/;
 		image_transport::ImageTransport it_;
 		image_transport::CameraPublisher pub_amp_, pub_dis_/*, pub_rgb*/;
+		ros::Publisher pub_xyz_;
 		//ros::Subscriber sub_amp_, sub_dis_;
 		boost::shared_ptr<ReconfigureServer> reconfigure_server_;
 		bool config_init_;
