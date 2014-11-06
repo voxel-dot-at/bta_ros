@@ -147,8 +147,8 @@ For the 2d stream we just need the http ip address where the camera is serving
 the .sdp file to start capturing video. Inside you sensor2D node you must 
 include the following parameter:
 
-<pre><code> < param name="2dIP" value="192.168.0.10"/ >
-</code></pre>
+<code> < param name="2dIP" value="192.168.0.10"/ >
+</code>
 
 
 #### 3.1.2 Modifying camera parameter runtime ####
