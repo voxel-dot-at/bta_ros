@@ -1,14 +1,15 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(bta_ros)
 
+set(2DSENSOR OFF)
 ## check required modules
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake_modules")
 find_package(bta REQUIRED)
-
-find_package(GStreamer REQUIRED )
-find_package(GLIB REQUIRED)
-find_package(GObject REQUIRED)
-
+if (2DSENSOR)
+	find_package(GStreamer REQUIRED )
+	find_package(GLIB REQUIRED)
+	find_package(GObject REQUIRED)
+endif ()
 #find_package(Boost REQUIRED COMPONENTS system thread)
 
 #find_package(OpenCV REQUIRED)
@@ -55,12 +56,9 @@ include_directories(include
   ${bta_INCLUDE_DIR}
   ${PCL_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
-  #${OpenCV_INCLUDE_DIRS}
-  ${GSTREAMER_INCLUDE_DIRS} 
-  ${GSTREAMER_APP_INCLUDE_DIRS} 
-  ${GLIB_INCLUDE_DIRS} 
-  ${GOBJECT_INCLUDE_DIRS}
 )
+
+
 
 add_library(bta_ros
 src/bta_ros.cpp
@@ -68,30 +66,48 @@ src/bta_ros.cpp
 target_link_libraries(bta_ros bta_ros ${bta_LIBRARIES} ${catkin_LIBRARIES} )
 add_dependencies(bta_ros ${PROJECT_NAME}_gencfg) 
 
-add_library(sensor2d
-src/sensor2D.cpp
-)
-target_link_libraries(sensor2d sensor2d ${GOBJECT_LIBRARIES} ${GSTREAMER_LIBRARIES} ${GSTREAMER_APP_LIBRARIES} ${GLIB_LIBRARIES} ${catkin_LIBRARIES} )
-
 add_library(BtaRosNodelet
 src/bta_ros_nodelet.cpp
 )
 target_link_libraries(BtaRosNodelet bta_ros ${catkin_LIBRARIES} ${Boost_LIBRARIES} )
 
-add_library(Sensor2DNodelet
-src/sensor2D_nodelet.cpp
-)
-target_link_libraries(Sensor2DNodelet sensor2d ${catkin_LIBRARIES} ${Boost_LIBRARIES} )
-
-## Declare a cpp executable
 add_executable(bta_ros_node src/bta_ros_node.cpp)
 
 target_link_libraries(bta_ros_node bta_ros ${catkin_LIBRARIES} )
 
-add_executable(sensor2d_node src/sensor2d_node.cpp)
+if (2DSENSOR)
+	include_directories(include
+	  ${GSTREAMER_INCLUDE_DIRS} 
+	  ${GSTREAMER_APP_INCLUDE_DIRS} 
+	  ${GLIB_INCLUDE_DIRS} 
+	  ${GOBJECT_INCLUDE_DIRS}
+	)
 
-target_link_libraries(sensor2d_node sensor2d ${catkin_LIBRARIES} )
-#set_target_properties(bta_ros_node PROPERTIES OUTPUT_NAME bta_ros)
+	add_library(sensor2d
+	src/sensor2D.cpp
+	)
+	target_link_libraries(sensor2d 
+		sensor2d 
+		${GOBJECT_LIBRARIES} 
+		${GSTREAMER_LIBRARIES} 
+		${GSTREAMER_APP_LIBRARIES} 
+		${GLIB_LIBRARIES} 
+		${catkin_LIBRARIES} 
+	)
+
+	add_library(Sensor2DNodelet
+	src/sensor2D_nodelet.cpp
+	)
+	target_link_libraries(Sensor2DNodelet 
+		sensor2d 
+		${catkin_LIBRARIES} 
+		${Boost_LIBRARIES} 
+	)
+
+	add_executable(sensor2d_node src/sensor2d_node.cpp)
+
+	target_link_libraries(sensor2d_node sensor2d ${catkin_LIBRARIES} )
+endif ()
 
 
 #############
@@ -109,12 +125,18 @@ target_link_libraries(sensor2d_node sensor2d ${catkin_LIBRARIES} )
 # )
 
 ## Mark executables and/or libraries for installation
- install(TARGETS bta_ros bta_ros_node BtaRosNodelet sensor2d Sensor2DNodelet
+ install(TARGETS bta_ros bta_ros_node BtaRosNodelet
    ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
  )
-
+if (2DSENSOR)
+ install(TARGETS sensor2d Sensor2DNodelet sensor2d_node
+   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+ )
+endif ()
 ## Mark cpp header files for installation
  install(DIRECTORY include/${PROJECT_NAME}/
    DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
