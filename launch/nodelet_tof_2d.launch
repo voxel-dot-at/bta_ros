@@ -18,7 +18,7 @@
 		name="bta_ros_2d_1"
 		args="load bta_ros/Sensor2DNodelet standalone_nodelet"
 		required="true"	output="screen">
-	<param name="2dIP" value="192.168.0.10"/>
+	<param name="2dURL" value="http://192.168.0.10/argos.sdp"/>
 	</node>
   	<node name="rqt_reconfigure" pkg="rqt_reconfigure" type="rqt_reconfigure" />
   	<node name="rviz" pkg="rviz" type="rviz" args="-d $(find bta_ros)/launch/rvizConfig_tof_2d.rviz" />

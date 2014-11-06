@@ -6,7 +6,7 @@
 <launch>
   <node pkg="bta_ros" type="sensor2d_node" name="bta_ros_1"
         args="" required="true" output="screen" >
-        <param name="2dIP" value="192.168.0.10"/>
+        <param name="2dURL" value="http://192.168.0.10/argos.sdp"/>
   </node>
 	<node name="rviz" pkg="rviz" type="rviz" args="-d $(find bta_ros)/launch/rvizConfig_2d.rviz" />
   
