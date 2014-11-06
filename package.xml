@@ -17,7 +17,6 @@
   <author email="simon@voxel.at">Simon Vogl</author>
   
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>gstreamer-1.0</build_depend>
   
   <build_depend>dynamic_reconfigure</build_depend>
   <build_depend>libpcl-all-dev</build_depend>
