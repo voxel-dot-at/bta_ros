@@ -154,6 +154,7 @@ namespace bta_ros
                 ss<<"";
                 ss  << "0x"<< std::hex << usValue;
                 ss >> config_.Reg_val;
+                ROS_INFO_STREAM("Read register: " << config_.Reg_addr << ". Value: " << ss.str());
             } catch(const boost::bad_lexical_cast &) {
                 ROS_WARN_STREAM("Wrong address: " << config_.Reg_addr << " " << it);
             }
@@ -172,6 +173,7 @@ namespace bta_ros
                     config_.Reg_val <<
                     ". Status: " << status);
             }
+            ROS_INFO_STREAM("Written register: " << config_.Reg_addr << ". Value: " << config_.Reg_val);
             BTAgetIntegrationTime(handle_, &usValue);
             config_.Integration_Time = usValue;
             BTAsetFrameRate(handle_, fr);
