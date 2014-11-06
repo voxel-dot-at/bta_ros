@@ -17,12 +17,12 @@ Sentis TOF P510
 The bta_ros driver works with ROS versions hydro and indigo. You can use catkin 
 workspaces or the previous rosbuild to configure, compile and get ready ROS.
 
-The following ROS tutorial links describe how to get ros_hydro and catkin 
+The following ROS tutorial links describe how to get ros_indigo and catkin 
 workspace.
 
 In Ubuntu:
 Follow the ROS installation tutorial: 
-> http://wiki.ros.org/hydro/Installation/Ubuntu.
+> http://wiki.ros.org/indigo/Installation/Ubuntu.
 
 Use catkin workspaces:
 >http://wiki.ros.org/catkin 
