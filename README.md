@@ -164,7 +164,7 @@ We have included it to be run in the .launch files.
 Alternatively you can change the parameter by a command line using dynparam from dynamic_reconfigure:
 > http://wiki.ros.org/dynamic_reconfigure
 
-> Read a register:
+Read a register:
 
 <pre><code>
 #Set register address
@@ -174,10 +174,10 @@ rosrun dynamic_reconfigure dynparam set /bta_ros_1 Read_reg True
 </pre></code>
 The value wil be display in console and written in Reg_val.
 
-> Write a register:
+Write a register:
 
 <pre><code>
-#Set register address
+#Set_register_address
 rosrun dynamic_reconfigure dynparam set /bta_ros_1 Reg_addr 0x5
 #Set register value
 rosrun dynamic_reconfigure dynparam set /bta_ros_1 Reg_val 0x5dc #1500
