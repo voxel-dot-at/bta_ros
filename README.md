@@ -22,7 +22,7 @@ workspace.
 
 In Ubuntu:
 Follow the ROS installation tutorial: 
->http://wiki.ros.org/hydro/Installation/Ubuntu.
+> http://wiki.ros.org/hydro/Installation/Ubuntu.
 
 Use catkin workspaces:
 >http://wiki.ros.org/catkin 
@@ -148,23 +148,23 @@ the .sdp file to start capturing video. Inside you sensor2D node you must
 include the following parameter:
 
 <pre><code> < param name="2dIP" value="192.168.0.10"/ >
-</pre></code>
+</code></pre>
 
 
 #### 3.1.2 Modifying camera parameter runtime ####
 
 Using the dynamic_reconfigure package we can change the camera register to 
 adapt the tof camera functions to our needs. We included different options for 
-changing the integration time and the frame rate as well as the possibility of
-read and write values to the camera registers.
+changing the integration time(Integration_Time) and the frame rate(Frame_Rate) as well as the possibility of
+read (Read_reg) and write(Write_reg) values to the camera registers(Reg_addr, Reg_val).
 
 For using this option in an user interface, run the ROS rqt_reconfigure node.
 We have included it to be run in the .launch files.
 
 Alternatively you can change the parameter by a command line using dynparam from dynamic_reconfigure:
->http://wiki.ros.org/dynamic_reconfigure
+> http://wiki.ros.org/dynamic_reconfigure
 
-Read a register:
+> Read a register:
 
 <pre><code>
 # 1. Set register address
@@ -174,7 +174,7 @@ rosrun dynamic_reconfigure dynparam set /bta_ros_1 Read_reg True
 </code></pre>
 The value wil be display in console and written in Reg_val.
 
-Write a register:
+> Write a register:
 
 <pre><code>
 # 1. Set_register_address
