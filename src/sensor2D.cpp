@@ -94,7 +94,7 @@ namespace bta_ros
 	
 		//GstPadTemplate *teePad;
 	
-	  if(!nh_private_.getParam(nodeName_+"/2dIP",address_))
+	  if(!nh_private_.getParam(nodeName_+"/2dURL",address_))
 			ROS_INFO_STREAM(
 				"No ip for download sdp file given. Trying with default: " << address_);
 	  	
@@ -107,7 +107,7 @@ namespace bta_ros
 	
 		souphttpsrc = gst_element_factory_make ("souphttpsrc", "sdphttpsrc");
 		g_assert (souphttpsrc);
-		g_object_set (souphttpsrc, "location", std::string("http://" + address_ + "/argos.sdp").c_str(), NULL);
+		g_object_set (souphttpsrc, "location", address_.c_str(), NULL);
 	
 		sdpdemux = gst_element_factory_make ("sdpdemux", NULL);
 		g_assert (sdpdemux);
