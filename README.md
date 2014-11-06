@@ -54,8 +54,7 @@ can modify the Findbta.cmake file and add your own paths.
 #### 2.1 Install dependencies ####
 
 Make sure you have the following ROS dependencies already installed:
-<pre><code> 
-apt-get install ros-indigo-pcl-ros ros-indigo-pcl-conversions ros-indigo-perception-pcl 
+<pre><code>apt-get install ros-indigo-pcl-ros ros-indigo-pcl-conversions ros-indigo-perception-pcl 
 </code></pre>
 
 #### 2.2 Install the package ####
@@ -63,8 +62,7 @@ apt-get install ros-indigo-pcl-ros ros-indigo-pcl-conversions ros-indigo-percept
 Clone from repository: https://github.com/voxel-dot-at/bta_ros.git
 to the src/ folder in your catkin workspace.
 Now compile it with:
-<pre><code>
-cd catkin_ws
+<pre><code>cd catkin_ws
 source devel/setup.bash ## initialize search path to include local workspace
 cd src/
 git clone https://github.com/voxel-dot-at/bta_ros.git
@@ -96,8 +94,7 @@ information captured by the ToF camera.
 
 In order to execute it you have just to type the following:
 
-<pre><code>
-roslaunch bta_ros nodelet.launch #for running it as nodelet
+<pre><code>roslaunch bta_ros nodelet.launch #for running it as nodelet
 #or
 roslaunch bta_ros node.launch #for running it as node
 </code></pre>
@@ -119,8 +116,7 @@ device.
 This is a example of the needed parameter for connecting to a Bluetechnix tof
 device with a network interface: 
 
-<pre><code>
-#Parameter server configuration for bta_ros.
+<pre><code>#Parameter server configuration for bta_ros.
 udpDataIpAddr: {
 n1: 224,
 n2: 0,
@@ -145,15 +141,14 @@ used for starting the connection with the ToF camera. To get more information
 about the BtaApi configuration parameter, please refer to the BtaApi 
 documentation. 
 
-(https://support.bluetechnix.at/wiki/BltTofApi_Quick_Start_Guide)
+> https://support.bluetechnix.at/wiki/BltTofApi_Quick_Start_Guide
 
 For the 2d stream we just need the http ip address where the camera is serving 
 the .sdp file to start capturing video. Inside you sensor2D node you must 
 include the following parameter:
 
-<pre><code>
-<param name="2dIP" value="192.168.0.10"/>
-<pre><code>
+<pre><code> < param name="2dIP" value="192.168.0.10"/ >
+</pre></code>
 
 
 #### 3.1.2 Modifying camera parameter runtime ####
