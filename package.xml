@@ -10,8 +10,9 @@
 
 
   <url type="website">http://www.ros.org/wiki/bta_ros</url>
-	<url type="bugtracker">https://github.com/voxel-dot-at/bta_ros/issues</url>
-	<url type="repository">https://github.com/voxel-dot-at/bta_ros</url>
+  <url type="website">http://www.voxel.at</url>
+  <url type="bugtracker">https://github.com/voxel-dot-at/bta_ros/issues</url>
+  <url type="repository">https://github.com/voxel-dot-at/bta_ros</url>
   
   <author email="amerino@voxel.at">Angel Merino</author>
   <author email="simon@voxel.at">Simon Vogl</author>
