@@ -161,6 +161,11 @@ read (Read_reg) and write(Write_reg) values to the camera registers(Reg_addr, Re
 For using this option in an user interface, run the ROS rqt_reconfigure node.
 We have included it to be run in the .launch files.
 
+In the rqt_reconfigure windows the bool checkboxes "Read_reg" and "Write_reg" work as buttons. 
+For reading you must set and register address through "Reg_addr" and them click on Read_reg. The result will be displayed in "Reg_val".
+In case of writting a register just set the address "Reg_addr" and the value "Reg_val" and click on "Write_reg".
+For any register operation an info message will inform you about it in the console
+
 Alternatively you can change the parameter by a command line using dynparam from dynamic_reconfigure:
 > http://wiki.ros.org/dynamic_reconfigure
 
