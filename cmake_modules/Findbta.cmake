@@ -8,6 +8,7 @@ FIND_PATH(bta_INCLUDE_DIR NAMES bta.h
  	PATHS
   		/usr/include/libbta/
 		/usr/local/include/libbta/
+		/usr/local/include/
 		../include/
 		../inc/
 		./
