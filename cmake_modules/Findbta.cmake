@@ -1,8 +1,8 @@
 # - Try to find btatofapi headers and binaries
 # Once done this will define
 #
-set(BTA_ETH OFF)
-set(BTA_P100 OFF)
+set(BTA_ETH)
+set(BTA_P100)
 
 FIND_PATH(bta_INCLUDE_DIR NAMES bta.h
  	PATHS
@@ -21,6 +21,7 @@ FIND_PATH(bta_INCLUDE_DIR NAMES bta.h
       set(ARCH_DIR "x86")
   	endif()
 
+
 find_library(bta_eth_LIBRARY NAMES bta_eth
         PATHS
   		/usr/lib/
@@ -29,6 +30,7 @@ find_library(bta_eth_LIBRARY NAMES bta_eth
 	NO_DEFAULT_PATH
 	DOC "Library binary"
 )
+set(bta_LIBRARIES ${bta_eth_LIBRARY})
 
 find_library(bta_p100_LIBRARY NAMES bta_p100
         PATHS
@@ -39,12 +41,18 @@ find_library(bta_p100_LIBRARY NAMES bta_p100
 	DOC "Library binary"
 )
 
+message( BTA_ETH:  ${BTA_ETH} )
+message( BTA_P100:  ${BTA_P100} )
+
 if (BTA_ETH)
 	set(bta_LIBRARIES ${bta_eth_LIBRARY})
+	#message( "BTA_ETH" )
 elseif (BTA_P100)
-	set(bta_LIBRARIES ${bta_eth_LIBRARY})
+	set(bta_LIBRARIES ${bta_p100_LIBRARY})
+	#message( "BTA_P100" )
 else ()
-set(bta_LIBRARIES ${bta_p100_LIBRARY} ${bta_eth_LIBRARY})
+	set(bta_LIBRARIES ${bta_eth_LIBRARY} ${bta_p100_LIBRARY})
+	#message( "BTA_ETH BTA_P100" )
 endif()
 #set(m100_INCLUDE_DIRS ${m100_INCLUDE_DIR} )
 
