@@ -34,10 +34,8 @@ tcpControlPort: 10001
 #uartReceiverAddress
 #serialNumber:
 #calibFileName:
-#frameMode:
-#infoEvent:
-#frameArrived:
-#frameQueueMode:
+frameMode: 1
+frameQueueMode: 1
 verbosity: 5
 frameQueueLength: 1
 

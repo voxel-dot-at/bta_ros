@@ -12,7 +12,7 @@
 		name="bta_ros_1"
 		args="load bta_ros/BtaRosNodelet standalone_nodelet"
 		required="true"	output="screen">
-		<rosparam command="load" file="$(find bta_ros)/launch/bta_ros_1.yaml" />
+		<rosparam command="load" file="$(find bta_ros)/launch/bta_ros_eth.yaml" />
 	</node>
 	<node pkg="nodelet" type="nodelet"
 		name="bta_ros_2d_1"
