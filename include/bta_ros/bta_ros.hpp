@@ -43,7 +43,6 @@
 #ifndef _BTA_ROS_HPP_
 #define _BTA_ROS_HPP_
 
-
 #include <bta.h>
 
 // ROS communication
@@ -54,15 +53,12 @@
 #include <sensor_msgs/CameraInfo.h>
 #include <sensor_msgs/SetCameraInfo.h>
 #include <sensor_msgs/image_encodings.h>
-#include <boost/thread/locks.hpp>
-//#include <opencv2/highgui/highgui.hpp>
-//#include <cv_bridge/cv_bridge.h>
+#include <sensor_msgs/PointCloud2.h>
+#include <sensor_msgs/point_cloud2_iterator.h>
 
 
 #include <ros/console.h>
 #include <tf/transform_listener.h>
-
-
 
 // PCL 
 #include <pcl_ros/point_cloud.h>
@@ -108,6 +104,7 @@ namespace bta_ros {
 	
 		BTA_Handle handle_;
 		BTA_Config config_;
+		
 		/**
 		 *
 		 * @brief Callback for rqt_reconfigure. It is called any time we change a 
@@ -118,8 +115,28 @@ namespace bta_ros {
 		 *
 		 */
 		void callback(bta_ros::bta_rosConfig &config, uint32_t level);
+		
+		/**
+		 *
+		 * @brief Reads configuration from the server parameters 
+		 *
+		 */
 		void parseConfig();
-
+		
+		/**
+		 *
+		 * @brief Returns the size of the data based in BTA_DataFormat 
+		 *
+		 */
+		size_t getDataSize(BTA_DataFormat dataFormat);
+			
+		/**
+		 *
+		 * @brief Returns the data encoding flat based in BTA_DataFormat 
+		 *
+		 */
+		std::string getDataType(BTA_DataFormat dataFormat);
+	
 		public:
 
 		/**
@@ -177,59 +194,61 @@ namespace bta_ros {
 			ROS_DEBUG("   Callback: infoEvent (%d) %s\n", eventId, msg);
 		};
 
+		//Test of using camera callback
 		/*static void BTA_CALLCONV frameArrived(BTA_Frame *frame) {
 
-			ROS_DEBUG("   Callback: frameArrived FrameCounter %d\n", frame->frameCounter);
-		
-			BTA_Status status;
-			uint16_t *distances;
-			BTA_DataFormat dataFormat;
-			BTA_Unit unit;
-			uint16_t xRes, yRes;
-		
-			sensor_msgs::ImagePtr amp (new sensor_msgs::Image);
-			sensor_msgs::ImagePtr dis (new sensor_msgs::Image);
-		
-			status = BTAgetDistances(frame, (void **)&distances, &dataFormat, &unit, &xRes, &yRes);
-			if (status == BTA_StatusOk) {
-				if (dataFormat == BTA_DataFormatUInt16) {
-				    if (unit == BTA_UnitMillimeter) {
-				        	dis->header.seq = frame->frameCounter;
-				        	dis->header.stamp.sec = frame->timeStamp;
-				        	dis->height = yRes;
-				        	dis->width = xRes;
-				        	dis->encoding = sensor_msgs::image_encodings::TYPE_16UC1;
-				        	dis->step = yRes*sizeof(uint16_t);
-				        	dis->data.resize(xRes*yRes*sizeof(uint16_t));
-				        	memcpy ( &dis->data[0], distances, xRes*yRes*sizeof(uint16_t) );
-				    }
-				}
+		ROS_DEBUG("   Callback: frameArrived FrameCounter %d\n", frame->frameCounter);
+	
+		BTA_Status status;
+		uint16_t *distances;
+		BTA_DataFormat dataFormat;
+		BTA_Unit unit;
+		uint16_t xRes, yRes;
+	
+		sensor_msgs::ImagePtr amp (new sensor_msgs::Image);
+		sensor_msgs::ImagePtr dis (new sensor_msgs::Image);
+	
+		status = BTAgetDistances(frame, (void **)&distances, &dataFormat, &unit, &xRes, &yRes);
+		if (status == BTA_StatusOk) {
+			if (dataFormat == BTA_DataFormatUInt16) {
+			    if (unit == BTA_UnitMillimeter) {
+			        	dis->header.seq = frame->frameCounter;
+			        	dis->header.stamp.sec = frame->timeStamp;
+			        	dis->height = yRes;
+			        	dis->width = xRes;
+			        	dis->encoding = sensor_msgs::image_encodings::TYPE_16UC1;
+			        	dis->step = yRes*sizeof(uint16_t);
+			        	dis->data.resize(xRes*yRes*sizeof(uint16_t));
+			        	memcpy ( &dis->data[0], distances, xRes*yRes*sizeof(uint16_t) );
+			    }
 			}
-		
-			uint16_t *amplitudes;
-			status = BTAgetAmplitudes(frame, (void **)&amplitudes, &dataFormat, &unit, &xRes, &yRes);
-			if (status == BTA_StatusOk) {
-				if (dataFormat == BTA_DataFormatUInt16) {
-				    if (unit == BTA_UnitUnitLess) {
-				        dis->header.seq = frame->frameCounter;
-				        	amp->header.stamp.sec = frame->timeStamp;
-				        	amp->height = yRes;
-				        	amp->width = xRes;
-				        	amp->encoding = sensor_msgs::image_encodings::TYPE_16UC1;
-				        	amp->step = yRes*sizeof(uint16_t);
-				        	amp->data.resize(xRes*yRes*sizeof(uint16_t));
-				        	memcpy ( &amp->data[0], amplitudes, xRes*yRes*sizeof(uint16_t) );
-				    }
-				}
+		}
+	
+		uint16_t *amplitudes;
+		status = BTAgetAmplitudes(frame, (void **)&amplitudes, &dataFormat, &unit, &xRes, &yRes);
+		if (status == BTA_StatusOk) {
+			if (dataFormat == BTA_DataFormatUInt16) {
+			    if (unit == BTA_UnitUnitLess) {
+			        dis->header.seq = frame->frameCounter;
+			        	amp->header.stamp.sec = frame->timeStamp;
+			        	amp->height = yRes;
+			        	amp->width = xRes;
+			        	amp->encoding = sensor_msgs::image_encodings::TYPE_16UC1;
+			        	amp->step = yRes*sizeof(uint16_t);
+			        	amp->data.resize(xRes*yRes*sizeof(uint16_t));
+			        	memcpy ( &amp->data[0], amplitudes, xRes*yRes*sizeof(uint16_t) );
+			    }
 			}
-			  
-			/ *
-			 * Publishing the messages
-			 * /
-			//int_amp.publish(amp);
-			//int_dis.publish(dis);
+		}
+		  
+		/ *
+		 * Publishing the messages
+		 * /
+		//int_amp.publish(amp);
+		//int_dis.publish(dis);
 
-		};*/
+	};*/
+	
 	};
 }
 
