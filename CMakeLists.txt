@@ -1,10 +1,11 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(bta_ros)
 
-set(2DSENSOR OFF)
+set(2DSENSOR)
 ## check required modules
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake_modules")
 find_package(bta REQUIRED)
+
 if (2DSENSOR)
 	find_package(GStreamer REQUIRED )
 	find_package(GLIB REQUIRED)
