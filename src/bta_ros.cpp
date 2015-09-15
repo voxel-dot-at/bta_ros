@@ -242,7 +242,7 @@ namespace bta_ros
       dis->height = yRes;
       dis->width = xRes;
       dis->encoding = getDataType(dataFormat);
-      dis->step = yRes*getDataSize(dataFormat);
+      dis->step = xRes*getDataSize(dataFormat);
       dis->data.resize(xRes*yRes*getDataSize(dataFormat));
       memcpy ( &dis->data[0], distances, xRes*yRes*getDataSize(dataFormat) );
             
@@ -262,7 +262,7 @@ namespace bta_ros
       amp->height = yRes;
       amp->width = xRes;
       amp->encoding = getDataType(amDataFormat);
-      amp->step = yRes*getDataSize(amDataFormat);
+      amp->step = xRes*getDataSize(amDataFormat);
       amp->data.resize(xRes*yRes*getDataSize(amDataFormat));
       memcpy ( &amp->data[0], amplitudes, xRes*yRes*getDataSize(amDataFormat) );
 
