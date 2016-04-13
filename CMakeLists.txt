@@ -1,10 +1,22 @@
 cmake_minimum_required(VERSION 2.8.3)
+cmake_policy(SET CMP0022 OLD)
+
 project(bta_ros)
 
-set(2DSENSOR)
+option (2DSENSOR "Add capacities for 2D sensor. Requires gstreamer" OFF)
+option (BTA_ETH "Build using the BTA Ethernet library" OFF)
+option (BTA_P100 "Build using the BTA P100(usb) library" OFF)
+
+message (STATUS "${CMAKE_PROJECT_NAME} options: ")
+message (STATUS "\t 2DSENSOR: " ${2DSENSOR})
+message (STATUS "\t BTA_ETH: " ${BTA_ETH})
+message (STATUS "\t BTA_P100: " ${BTA_P100})
+
 ## check required modules
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake_modules")
 find_package(bta REQUIRED)
+
+find_package(OpenCV REQUIRED COMPONENTS core imgproc)
 
 if (2DSENSOR)
 	find_package(GStreamer REQUIRED )
@@ -54,27 +66,23 @@ catkin_package(
 
 include_directories(include
   ${catkin_INCLUDE_DIRS}
-  ${bta_INCLUDE_DIR}
+  ${bta_INCLUDE_DIRS}
   ${PCL_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
 )
 
 
 
-add_library(bta_ros
-src/bta_ros.cpp
-)
-target_link_libraries(bta_ros bta_ros ${bta_LIBRARIES} ${catkin_LIBRARIES} )
+add_library(bta_ros src/bta_ros.cpp)
+target_link_libraries(bta_ros turbojpeg ${OpenCV_LIBRARIES} ${catkin_LIBRARIES})
 add_dependencies(bta_ros ${PROJECT_NAME}_gencfg) 
 
-add_library(BtaRosNodelet
-src/bta_ros_nodelet.cpp
-)
-target_link_libraries(BtaRosNodelet bta_ros ${catkin_LIBRARIES} ${Boost_LIBRARIES} )
+add_library(BtaRosNodelet src/bta_ros_nodelet.cpp)
+target_link_libraries(BtaRosNodelet bta_ros )
 
 add_executable(bta_ros_node src/bta_ros_node.cpp)
-
-target_link_libraries(bta_ros_node bta_ros ${catkin_LIBRARIES} )
+target_link_libraries(bta_ros_node bta_ros ${bta_LIBRARIES})
 
 if (2DSENSOR)
 	include_directories(include

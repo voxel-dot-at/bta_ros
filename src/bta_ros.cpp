@@ -482,7 +482,7 @@ namespace bta_ros
 			config_.tcpDataPort = (uint16_t)iusValue;
 	
 		nh_private_.getParam(nodeName_+"/uartPortName",uartPortName_);
-		config_.uartPortName = (int8_t *)uartPortName_.c_str();
+		config_.uartPortName = (uint8_t *)uartPortName_.c_str();
 	
 		if(nh_private_.getParam(nodeName_+"/uartBaudRate",iusValue))
 			config_.uartBaudRate = (uint32_t)iusValue;
@@ -515,6 +515,12 @@ namespace bta_ros
 		int32_t frameQueueMode;
 		if (nh_private_.getParam(nodeName_+"/frameQueueMode",frameQueueMode))
   		config_.frameQueueMode = (BTA_QueueMode)frameQueueMode;
+	
+		#if !defined(BTA_ETH) || !defined(BTA_P100)
+		int32_t deviceType;
+		if(nh_private_.getParam(nodeName_+"/deviceType",deviceType))
+			config_.deviceType = (BTA_DeviceType)deviceType;
+		#endif
 	
 		//config_.frameArrived = &frameArrived;
 		config_.infoEvent = &infoEventCb;

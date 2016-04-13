@@ -21,6 +21,7 @@ frameMode: 2
 #frameArrived:
 #frameQueueMode:
 verbosity: 5
+deviceType: 2
 #frameQueueLength: 1
 
 # Optional parameter.
