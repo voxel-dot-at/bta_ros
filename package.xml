@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>bta_ros</name>
-  <version>0.0.4</version>
+  <version>0.0.5</version>
   <description>The BTA ROS driver</description>
 
   <maintainer email="office@voxel.at">Voxel Interactive</maintainer>

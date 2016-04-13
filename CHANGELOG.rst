@@ -73,8 +73,8 @@ Changelog for package bta_ros
 * Updated README.md
 * Contributors: Angel Merino, Simon Vogl
 
-Forthcoming
------------
+0.0.5 (2016-04-13)
+------------------
 * Updated Changelog
 * Added capture of 3d data and publish as pointcloud2 when possible
 * Merge branch 'master' of https://github.com/voxel-dot-at/bta_ros
