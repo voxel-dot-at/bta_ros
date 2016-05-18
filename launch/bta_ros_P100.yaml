@@ -16,7 +16,7 @@
 #uartReceiverAddress
 #serialNumber:
 #calibFileName:
-frameMode: 2
+frameMode: 4
 #infoEvent:
 #frameArrived:
 #frameQueueMode:

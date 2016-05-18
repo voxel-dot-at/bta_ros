@@ -12,6 +12,12 @@ message (STATUS "\t 2DSENSOR: " ${2DSENSOR})
 message (STATUS "\t BTA_ETH: " ${BTA_ETH})
 message (STATUS "\t BTA_P100: " ${BTA_P100})
 
+if("${CMAKE_BUILD_TYPE}" STREQUAL "")
+   set(CMAKE_BUILD_TYPE Release CACHE STRING "build type default set to Release to improve performance" FORCE)
+endif("${CMAKE_BUILD_TYPE}" STREQUAL "")
+
+MESSAGE(STATUS "Build type: " ${CMAKE_BUILD_TYPE})
+
 ## check required modules
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake_modules")
 find_package(bta REQUIRED)

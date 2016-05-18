@@ -28,7 +28,7 @@
  *
  * @section intro_sec Introduction
  *
- * This software defines a interface for working with all ToF cameras from 
+ * This software defines a interface for working with all ToF cameras from
  * Bluetechnix GmbH supported by their API.
  *
  * @section install_sec Installation
@@ -55,7 +55,8 @@
 #include <sensor_msgs/image_encodings.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <sensor_msgs/point_cloud2_iterator.h>
-
+#include <tf2_ros/static_transform_broadcaster.h>
+#include <geometry_msgs/TransformStamped.h>
 
 #include <ros/console.h>
 #include <tf/transform_listener.h>
@@ -79,177 +80,189 @@
 
 namespace bta_ros {
 
-	class BtaRos 
-	{
+class BtaRos
+{
 
-		typedef bta_ros::bta_rosConfig Config;
-		typedef dynamic_reconfigure::Server<Config> ReconfigureServer;
+    typedef bta_ros::bta_rosConfig Config;
+    typedef dynamic_reconfigure::Server<Config> ReconfigureServer;
 
-		ros::NodeHandle nh_, nh_private_;
-		std::string nodeName_;
-		camera_info_manager::CameraInfoManager cim_tof_/*, *cim_rgb*/;
-		image_transport::ImageTransport it_;
-		image_transport::CameraPublisher pub_amp_, pub_dis_/*, pub_rgb*/;
-		ros::Publisher pub_xyz_;
-		//ros::Subscriber sub_amp_, sub_dis_;
-		boost::shared_ptr<ReconfigureServer> reconfigure_server_;
-		bool config_init_;
-	
-		boost::mutex connect_mutex_;
-	
-		// Variables needed for config
-		uint8_t udpDataIpAddr_[6], udpControlOutIpAddr_[6],
-		udpControlInIpAddr_[6], tcpDeviceIpAddr_[6];
-		std::string uartPortName_, calibFileName_;
-	
-		BTA_Handle handle_;
-		BTA_Config config_;
-		
-		/**
-		 *
-		 * @brief Callback for rqt_reconfigure. It is called any time we change a 
-		 * parameter in the visual interface 
-		 *
-		 * @param [in] argos3d_p100::argos3d_p100Config
-		 * @param [in] uint32_t
-		 *
-		 */
-		void callback(bta_ros::bta_rosConfig &config, uint32_t level);
-		
-		/**
-		 *
-		 * @brief Reads configuration from the server parameters 
-		 *
-		 */
-		void parseConfig();
-		
-		/**
-		 *
-		 * @brief Returns the size of the data based in BTA_DataFormat 
-		 *
-		 */
-		size_t getDataSize(BTA_DataFormat dataFormat);
-			
-		/**
-		 *
-		 * @brief Returns the data encoding flat based in BTA_DataFormat 
-		 *
-		 */
-		std::string getDataType(BTA_DataFormat dataFormat);
-	
-		public:
+public:
 
-		/**
-		 *
-		 * @brief Class constructor.
-		 *
-		 * param [in] ros::NodeHandle
-		 * param [in] ros::NodeHandle
-		 * param [in] std::string
-		 *
-		 */
-		BtaRos(ros::NodeHandle nh_camera, ros::NodeHandle nh_private, std::string nodeName);
-	
-		/**
-		 *
-		 * @brief Class destructor.
-		 *
-		 */
-		virtual ~BtaRos();
+    /**
+     *
+     * @brief Class constructor.
+     *
+     * param [in] ros::NodeHandle
+     * param [in] ros::NodeHandle
+     * param [in] std::string
+     *
+     */
+    BtaRos(ros::NodeHandle nh_camera, ros::NodeHandle nh_private, std::string nodeName);
 
-		/**
-		 *
-		 * @brief Initializes the device and parameters.
-		 *
-		 */
-		int initialize();
-	
-		/**
-		 *
-		 * @brief Helper for connect to the device. 
-		 *
-		 */
-		int connectCamera();
+    /**
+     *
+     * @brief Class destructor.
+     *
+     */
+    virtual ~BtaRos();
 
-		/**
-		 *
-		 * @brief Closes the connection to the device.
-		 *
-		 */
-		void close();
+    /**
+     *
+     * @brief Initializes the device and parameters.
+     *
+     */
+    int initialize();
+
+    /**
+     *
+     * @brief Helper for connect to the device.
+     *
+     */
+    int connectCamera();
+
+    /**
+     *
+     * @brief Closes the connection to the device.
+     *
+     */
+    void close();
 
 
-		/**
-		 *
-		 * @brief Publish the data based on set up parameters.
-		 *
-		 */
-		void publishData();
-	
-		//void ampCb(const sensor_msgs::ImagePtr& amp);
-		
-	  //void disCb(const sensor_msgs::ImagePtr& dis);
+    /**
+     *
+     * @brief Publish the data based on set up parameters.
+     *
+     */
+    void publishData();
 
-		static void BTA_CALLCONV infoEventCb(BTA_EventId eventId, int8_t *msg) {
-			ROS_DEBUG("   Callback: infoEvent (%d) %s\n", eventId, msg);
-		};
+    //void ampCb(const sensor_msgs::ImagePtr& amp);
 
-		//Test of using camera callback
-		/*static void BTA_CALLCONV frameArrived(BTA_Frame *frame) {
+    //void disCb(const sensor_msgs::ImagePtr& dis);
 
-		ROS_DEBUG("   Callback: frameArrived FrameCounter %d\n", frame->frameCounter);
-	
-		BTA_Status status;
-		uint16_t *distances;
-		BTA_DataFormat dataFormat;
-		BTA_Unit unit;
-		uint16_t xRes, yRes;
-	
-		sensor_msgs::ImagePtr amp (new sensor_msgs::Image);
-		sensor_msgs::ImagePtr dis (new sensor_msgs::Image);
-	
-		status = BTAgetDistances(frame, (void **)&distances, &dataFormat, &unit, &xRes, &yRes);
-		if (status == BTA_StatusOk) {
-			if (dataFormat == BTA_DataFormatUInt16) {
-			    if (unit == BTA_UnitMillimeter) {
-			        	dis->header.seq = frame->frameCounter;
-			        	dis->header.stamp.sec = frame->timeStamp;
-			        	dis->height = yRes;
-			        	dis->width = xRes;
-			        	dis->encoding = sensor_msgs::image_encodings::TYPE_16UC1;
-			        	dis->step = yRes*sizeof(uint16_t);
-			        	dis->data.resize(xRes*yRes*sizeof(uint16_t));
-			        	memcpy ( &dis->data[0], distances, xRes*yRes*sizeof(uint16_t) );
-			    }
-			}
+    static void BTA_CALLCONV infoEventCb(BTA_EventId eventId, int8_t *msg) {
+	ROS_DEBUG("   Callback: infoEvent (%d) %s\n", eventId, msg);
+    }
+
+private:
+    ros::NodeHandle nh_, nh_private_;
+    std::string nodeName_;
+    camera_info_manager::CameraInfoManager cim_tof_/*, *cim_rgb*/;
+    image_transport::ImageTransport it_;
+    image_transport::CameraPublisher pub_amp_, pub_dis_/*, pub_rgb*/;
+    tf2_ros::StaticTransformBroadcaster pub_tf;
+    geometry_msgs::TransformStamped transformStamped;
+    ros::Publisher pub_xyz_;
+    //ros::Subscriber sub_amp_, sub_dis_;
+    boost::shared_ptr<ReconfigureServer> reconfigure_server_;
+    bool config_init_;
+
+    boost::mutex connect_mutex_;
+
+    // Variables needed for config
+    uint8_t udpDataIpAddr_[6], udpControlOutIpAddr_[6],
+    udpControlInIpAddr_[6], tcpDeviceIpAddr_[6];
+    std::string uartPortName_, calibFileName_;
+
+    sensor_msgs::PointCloud2Ptr _xyz;
+
+    BTA_Handle handle_;
+    BTA_Config config_;
+
+    /**
+     *
+     * @brief Callback for rqt_reconfigure. It is called any time we change a
+     * parameter in the visual interface
+     *
+     * @param [in] bta_ros::bta_rosConfig
+     * @param [in] uint32_t
+     *
+     */
+    void callback(bta_ros::bta_rosConfig &config, uint32_t level);
+
+    /**
+     *
+     * @brief Reads configuration from the server parameters
+     *
+     */
+    void parseConfig();
+
+    /**
+     *
+     * @brief Returns the size of the data based in BTA_DataFormat
+     *
+     */
+    size_t getDataSize(BTA_DataFormat dataFormat);
+
+    /**
+     *
+     * @brief Returns the data encoding flat based in BTA_DataFormat
+     *
+     */
+    std::string getDataType(BTA_DataFormat dataFormat);
+
+    /**
+     * @brief Gives the conversion value to meters from the BTA_Unit
+     * @param unit
+     * @return the value to multiply to the data.
+     */
+    float getUnit2Meters(BTA_Unit unit);
+
+    //Test of using camera callback
+    /*static void BTA_CALLCONV frameArrived(BTA_Frame *frame) {
+
+	ROS_DEBUG("   Callback: frameArrived FrameCounter %d\n", frame->frameCounter);
+
+	BTA_Status status;
+	uint16_t *distances;
+	BTA_DataFormat dataFormat;
+	BTA_Unit unit;
+	uint16_t xRes, yRes;
+
+	sensor_msgs::ImagePtr amp (new sensor_msgs::Image);
+	sensor_msgs::ImagePtr dis (new sensor_msgs::Image);
+
+	status = BTAgetDistances(frame, (void **)&distances, &dataFormat, &unit, &xRes, &yRes);
+	if (status == BTA_StatusOk) {
+		if (dataFormat == BTA_DataFormatUInt16) {
+		    if (unit == BTA_UnitMillimeter) {
+				dis->header.seq = frame->frameCounter;
+				dis->header.stamp.sec = frame->timeStamp;
+				dis->height = yRes;
+				dis->width = xRes;
+				dis->encoding = sensor_msgs::image_encodings::TYPE_16UC1;
+				dis->step = yRes*sizeof(uint16_t);
+				dis->data.resize(xRes*yRes*sizeof(uint16_t));
+				memcpy ( &dis->data[0], distances, xRes*yRes*sizeof(uint16_t) );
+		    }
 		}
-	
-		uint16_t *amplitudes;
-		status = BTAgetAmplitudes(frame, (void **)&amplitudes, &dataFormat, &unit, &xRes, &yRes);
-		if (status == BTA_StatusOk) {
-			if (dataFormat == BTA_DataFormatUInt16) {
-			    if (unit == BTA_UnitUnitLess) {
-			        dis->header.seq = frame->frameCounter;
-			        	amp->header.stamp.sec = frame->timeStamp;
-			        	amp->height = yRes;
-			        	amp->width = xRes;
-			        	amp->encoding = sensor_msgs::image_encodings::TYPE_16UC1;
-			        	amp->step = yRes*sizeof(uint16_t);
-			        	amp->data.resize(xRes*yRes*sizeof(uint16_t));
-			        	memcpy ( &amp->data[0], amplitudes, xRes*yRes*sizeof(uint16_t) );
-			    }
-			}
-		}
-		  
-		/ *
-		 * Publishing the messages
-		 * /
-		//int_amp.publish(amp);
-		//int_dis.publish(dis);
+	}
 
-	};*/
-	
-	};
+	uint16_t *amplitudes;
+	status = BTAgetAmplitudes(frame, (void **)&amplitudes, &dataFormat, &unit, &xRes, &yRes);
+	if (status == BTA_StatusOk) {
+		if (dataFormat == BTA_DataFormatUInt16) {
+		    if (unit == BTA_UnitUnitLess) {
+			dis->header.seq = frame->frameCounter;
+				amp->header.stamp.sec = frame->timeStamp;
+				amp->height = yRes;
+				amp->width = xRes;
+				amp->encoding = sensor_msgs::image_encodings::TYPE_16UC1;
+				amp->step = yRes*sizeof(uint16_t);
+				amp->data.resize(xRes*yRes*sizeof(uint16_t));
+				memcpy ( &amp->data[0], amplitudes, xRes*yRes*sizeof(uint16_t) );
+		    }
+		}
+	}
+
+	/ *
+	 * Publishing the messages
+	 * /
+	//int_amp.publish(amp);
+	//int_dis.publish(dis);
+
+    };*/
+
+};
 }
 
 #endif
