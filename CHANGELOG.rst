@@ -2,8 +2,18 @@
 Changelog for package bta_ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.0.6 (2016-05-18)
 ------------------
+* Improved performance. Added fixed transformation for cloud. Changed frameid names, converting xyz values to meters
+* added launch configuration for displaying 3D pointclouds. use 'roslaunch bta_ros node_tof_3d.launch' to start up
+* updated IP parameters to reflect default
+  updated IP parameters to reflect default camera settings.
+* Update README.md
+* Updated CHANGELOG.rst v0.0.5
+* Contributors: Angel Merino, Simon Vogl
 
 0.0.5 (2016-04-13)
 ------------------
