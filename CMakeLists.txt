@@ -4,8 +4,6 @@ cmake_policy(SET CMP0022 OLD)
 project(bta_ros)
 
 option (2DSENSOR "Add capacities for 2D sensor. Requires gstreamer" OFF)
-option (BTA_ETH "Build using the BTA Ethernet library" OFF)
-option (BTA_P100 "Build using the BTA P100(usb) library" OFF)
 
 message (STATUS "${CMAKE_PROJECT_NAME} options: ")
 message (STATUS "\t 2DSENSOR: " ${2DSENSOR})
@@ -85,7 +83,7 @@ target_link_libraries(bta_ros turbojpeg ${OpenCV_LIBRARIES} ${catkin_LIBRARIES})
 add_dependencies(bta_ros ${PROJECT_NAME}_gencfg) 
 
 add_library(BtaRosNodelet src/bta_ros_nodelet.cpp)
-target_link_libraries(BtaRosNodelet bta_ros )
+target_link_libraries(BtaRosNodelet bta_ros turbojpeg ${OpenCV_LIBRARIES} ${catkin_LIBRARIES} ${bta_LIBRARIES})
 
 add_executable(bta_ros_node src/bta_ros_node.cpp)
 target_link_libraries(bta_ros_node bta_ros ${bta_LIBRARIES})
