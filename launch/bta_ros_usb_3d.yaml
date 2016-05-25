@@ -1,23 +1,6 @@
 #Parameter server configuration for bta_ros.
-deviceType: 1
-udpDataIpAddr: {
-n1: 224,
-n2: 0,
-n3: 0,
-n4: 1,
-}
 
-udpDataIpAddrLen: 4
-udpDataPort: 10002
-tcpDeviceIpAddr: {
-n1: 192,
-n2: 168,
-n3: 0,
-n4: 10,
-}
-
-tcpDeviceIpAddrLen: 4
-tcpControlPort: 10001
+deviceType: 2
 
 #udpControlOutIpAddr: 
 #udpControlOutIpAddrLen:

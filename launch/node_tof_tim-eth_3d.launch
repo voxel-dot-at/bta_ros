@@ -6,7 +6,7 @@
 <launch>
   <node pkg="bta_ros" type="bta_ros_node" name="bta_ros_1"
         args="" required="true" output="screen" >
-        <rosparam command="load" file="$(find bta_ros)/launch/bta_ros_tim-eth.yaml" />
+        <rosparam command="load" file="$(find bta_ros)/launch/bta_ros_tim-eth_3d.yaml" />
   </node>
   
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find bta_ros)/launch/rvizConfig_tof.rviz" />
