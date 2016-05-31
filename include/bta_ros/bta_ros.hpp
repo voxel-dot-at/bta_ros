@@ -31,12 +31,11 @@
  * This software defines a interface for working with all ToF cameras from
  * Bluetechnix GmbH supported by their API.
  *
- * @section install_sec Installation
+ * = bta_ros package is set to end-of-life. =
  *
- * We encorage you to follow the instruction we prepared in:
- *
- * ROS wiki: http://wiki.ros.org/bta_ros
- * Github repository: https://github.com/voxel-dot-at/bta_ros
+ * The package has changed its name to bta_tof_driver (http://wiki.ros.org/bta_tof_driver|bta_tof_driver).
+ * It will not be updated with the last changes.
+ * Please use http://wiki.ros.org/bta_tof_driver instead of this package.
  *
  */
 
